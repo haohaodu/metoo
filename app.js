@@ -13,11 +13,16 @@ let products = {
 let reviews = {};
 
 const express = require("express");
+const cors = require("cors");
 const app = express();
 
 app.use(express.json());
 
 const inStock = (item) => item.stock >= 1;
+
+app.get("/", (req, res) => {
+  res.send("Hello World");
+});
 
 app.get("/products", (req, res) => {
   const { id, name, type } = req.query;
@@ -77,5 +82,6 @@ app.get("/products", (req, res) => {
   });
 });
 
-app.listen(3000);
-console.log("Server listening at http://localhost:3000");
+app.listen(process.env.PORT || 3000, () =>
+  console.log("Server listening at http://localhost:3000")
+);
