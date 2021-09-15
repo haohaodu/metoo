@@ -1,0 +1,24 @@
+{
+  "name": "metoo-backend",
+  "version": "1.0.0",
+  "description": "Express Backend for MVP Search Engine",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon ./src/app"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/haohaodu/metoo-backend.git"
+  },
+  "author": "haohao du",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/haohaodu/metoo-backend/issues"
+  },
+  "homepage": "https://github.com/haohaodu/metoo-backend#readme",
+  "dependencies": {
+    "express": "^4.17.1",
+    "nodemon": "^2.0.12"
+  }
+}
