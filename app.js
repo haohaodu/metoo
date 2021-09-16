@@ -1,22 +1,62 @@
 /** @format */
 
+let nextProductId = 3;
+let nextReviewId = 5;
 let products = {
   1: {
+    id: 1,
     name: `doofus`,
     stock: 1,
+    price: 15,
+    length: 4,
+    width: 2,
+    height: 1,
+    reviews: {
+      1: {
+        id: 1,
+        rating: 2,
+      },
+      2: {
+        id: 2,
+        rating: 5,
+      },
+    },
   },
   2: {
+    id: 2,
     name: `scoobey`,
     stock: 0,
+    price: 5,
+    length: 1,
+    width: 1,
+    height: 1,
+    reviews: {
+      3: {
+        id: 3,
+        rating: 9,
+      },
+      4: {
+        id: 4,
+        rating: 10,
+      },
+    },
   },
 };
-let reviews = {};
 
 const express = require("express");
+const {
+  productValidationRules,
+  reviewValidationRules,
+  validate,
+} = require("./src/validate");
+const logger = require("morgan");
 const cors = require("cors");
 const app = express();
 
+app.use(cors());
+app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
+app.use(logger("dev"));
 
 const inStock = (item) => item.stock >= 1;
 
@@ -24,62 +64,108 @@ app.get("/", (req, res) => {
   res.send("Hello World");
 });
 
-app.get("/products", (req, res) => {
-  const { id, name, type } = req.query;
-  let productList = [];
+app.get("/product/:id", (req, res) => {
+  const { id } = req.params;
+  const { instock } = req.query;
 
-  if (!id && !name) return res.status(200).json(products);
-
-  if (id) {
-    // check if product with id exists
-    if (products.hasOwnProperty(id)) {
-      // if they are looking for in-stock products, check if we have any left
-      if (type === "in-stock" && !inStock(products[id])) {
-        return res
-          .status(404)
-          .json({ message: `Product with id ${id} out of stock` });
-      }
-      return res.status(200).json({ data: [products[id]] });
-    }
-    // product does not exist
-    else
+  // specific product exists in db
+  if (products.hasOwnProperty(id)) {
+    // specific product is out of stock
+    if (instock && !inStock(products[id])) {
       return res
         .status(404)
-        .json({ message: `Product with id ${id} not found.` });
+        .json({ message: `Product with id ${id} out of stock` });
+    }
+    // specific product is in stock, or instock option not provided
+    return res.status(200).json({ data: products[id] });
+  }
+
+  // specific product not found
+  else
+    return res
+      .status(404)
+      .json({ message: `Product with id ${id} not found.` });
+});
+
+app.get("/products", (req, res) => {
+  let { name, instock } = req.query;
+  let productList = [];
+
+  if (instock) instock = JSON.parse(instock);
+
+  if (!name && !instock) return res.status(200).json(products);
+
+  if (!name && instock) {
+    Object.keys(products).map((key) => {
+      if (products[key].stock > 0) productList.push(products[key]);
+    });
+    if (productList.length === 0)
+      return res
+        .status(200)
+        .json({ message: "No products in stock", data: {} });
+    return res.status(200).json({ data: productList });
   }
 
   if (name) {
     //   loop through db and check if product with name exists
     Object.keys(products).map((key) => {
       const product = products[key];
-
       if (product.name.includes(name)) {
         // check if the found product is in stock
-        if (type === "in-stock") {
-          // only add it if the product is in stock
+        if (instock) {
           if (product.stock > 0) productList.push(product);
         } else productList.push(product);
       }
     });
-    console.log("product list: ", productList);
     // check if no matching names are found and type was in stock
-    if (productList.length === 0 && type === "in-stock")
+    if (productList.length === 0 && instock)
       return res.status(404).json({
-        message: `Product with name ${name} not in stock.`,
+        message: `Product with name ${name} not in stock or does not exist.`,
       });
     if (productList.length === 0)
       return res
         .status(404)
         .json({ message: `Product with name ${name} not found.` });
-    // if products were found and type is 'all' return all the products
-    if (type !== "in-stock")
-      return res.status(200).json({
-        data: productList,
-      });
+    res.status(200).json({
+      data: productList,
+    });
   }
-  return res.status(200).json({
-    data: products[key],
-  });
+});
+
+app.post("/product", productValidationRules(), validate, (req, res) => {
+  const { name, price, length, width, height, stock } = req.body;
+  let product = {
+    id: nextProductId,
+    name: name,
+    price: price,
+    length: length,
+    width: width,
+    height: height,
+    stock: stock,
+  };
+  products[nextProductId] = product;
+  nextProductId++;
+  return res.status(201).json({ message: "Product successfully created" });
+});
+
+app.post("/review", reviewValidationRules(), validate, (req, res) => {
+  const { rating, productId } = req.body;
+  let review = {
+    id: nextReviewId,
+    rating: rating,
+  };
+  products[productId].reviews[nextReviewId] = review;
+  nextReviewId++;
+  return res.status(201).json({ message: "Review successfully created" });
+});
+
+app.get("/reviews/:productId", (req, res) => {
+  const { productId } = req.params;
+
+  if (products.hasOwnProperty(productId))
+    return res.status(200).json({ data: products[productId].reviews });
+
+  res.status(404).json({ message: `Product with id ${productId} not found.` });
 });
 
 app.listen(process.env.PORT || 3000, () =>
