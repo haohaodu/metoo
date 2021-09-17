@@ -41,6 +41,27 @@ let products = {
       },
     },
   },
+
+  3: {
+    id: 3,
+    name: `scoobey`,
+    stock: 0,
+    price: 5,
+    length: 1,
+    width: 1,
+    height: 1,
+  },
+
+  4: {
+    id: 4,
+    name: `scoobey`,
+    stock: 0,
+    price: 5,
+    length: 1,
+    width: 1,
+    height: 1,
+    reviews: {},
+  },
 };
 
 const express = require("express");
@@ -93,8 +114,13 @@ app.get("/products", (req, res) => {
 
   if (instock) instock = JSON.parse(instock);
 
-  if (!name && !instock) return res.status(200).json(products);
+  // get all products
+  if (!name && !instock) {
+    Object.keys(products).map((key) => productList.push(products[key]));
+    return res.status(200).json({ data: productList });
+  }
 
+  // get all products in stock
   if (!name && instock) {
     Object.keys(products).map((key) => {
       if (products[key].stock > 0) productList.push(products[key]);
@@ -106,6 +132,7 @@ app.get("/products", (req, res) => {
     return res.status(200).json({ data: productList });
   }
 
+  // get all products with specific name (in stock or all)
   if (name) {
     //   loop through db and check if product with name exists
     Object.keys(products).map((key) => {
@@ -168,6 +195,6 @@ app.get("/reviews/:productId", (req, res) => {
   res.status(404).json({ message: `Product with id ${productId} not found.` });
 });
 
-app.listen(process.env.PORT || 3000, () =>
-  console.log("Server listening at http://localhost:3000")
+app.listen(process.env.PORT || 5000, () =>
+  console.log("Server listening at http://localhost:5000")
 );
