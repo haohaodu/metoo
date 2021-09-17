@@ -11,16 +11,16 @@ let products = {
     length: 4,
     width: 2,
     height: 1,
-    reviews: {
-      1: {
+    reviews: [
+      {
         id: 1,
         rating: 2,
       },
-      2: {
+      {
         id: 2,
         rating: 5,
       },
-    },
+    ],
   },
   2: {
     id: 2,
@@ -30,16 +30,16 @@ let products = {
     length: 1,
     width: 1,
     height: 1,
-    reviews: {
-      3: {
+    reviews: [
+      {
         id: 3,
         rating: 9,
       },
-      4: {
+      {
         id: 4,
         rating: 10,
       },
-    },
+    ],
   },
 
   3: {
@@ -50,6 +50,7 @@ let products = {
     length: 1,
     width: 1,
     height: 1,
+    reviews: [],
   },
 
   4: {
@@ -60,7 +61,7 @@ let products = {
     length: 1,
     width: 1,
     height: 1,
-    reviews: {},
+    reviews: [],
   },
 };
 
@@ -188,11 +189,20 @@ app.post("/review", reviewValidationRules(), validate, (req, res) => {
 
 app.get("/reviews/:productId", (req, res) => {
   const { productId } = req.params;
+  const reviewsList = [];
 
-  if (products.hasOwnProperty(productId))
-    return res.status(200).json({ data: products[productId].reviews });
+  if (productId && products.hasOwnProperty(productId)) {
+    const reviews = products[productId].reviews;
 
-  res.status(404).json({ message: `Product with id ${productId} not found.` });
+    reviews.map(({ id, rating }) =>
+      reviewsList.push({ id: id, rating: rating })
+    );
+    return res.status(200).json({ data: reviewsList });
+  }
+
+  res
+    .status(404)
+    .json({ message: `Reviews for product id ${productId} not found.` });
 });
 
 app.listen(process.env.PORT || 5000, () =>
