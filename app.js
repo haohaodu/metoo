@@ -177,14 +177,15 @@ app.post("/product", productValidationRules(), validate, (req, res) => {
 });
 
 app.post("/review", reviewValidationRules(), validate, (req, res) => {
+  console.log("THIS IS THE BODY WE GOT IN REIVEW: ", req.body);
   const { rating, productId } = req.body;
   let review = {
     id: nextReviewId,
     rating: rating,
   };
-  products[productId].reviews[nextReviewId] = review;
+  products[productId].reviews.push(review);
   nextReviewId++;
-  return res.status(201).json({ message: "Review successfully created" });
+  return res.status(201).json({ message: "Review successfully created." });
 });
 
 app.get("/reviews/:productId", (req, res) => {
