@@ -1,6 +1,6 @@
 /** @format */
 
-let nextProductId = 3;
+let nextProductId = 5;
 let nextReviewId = 5;
 let products = {
   1: {
@@ -44,7 +44,7 @@ let products = {
 
   3: {
     id: 3,
-    name: `scoobey`,
+    name: `scoobey3`,
     stock: 0,
     price: 5,
     length: 1,
@@ -55,7 +55,7 @@ let products = {
 
   4: {
     id: 4,
-    name: `scoobey`,
+    name: `scoobey4`,
     stock: 0,
     price: 5,
     length: 1,
@@ -170,9 +170,11 @@ app.post("/product", productValidationRules(), validate, (req, res) => {
     width: width,
     height: height,
     stock: stock,
+    reviews: [],
   };
   products[nextProductId] = product;
   nextProductId++;
+  console.log("product list: ", products);
   return res.status(201).json({ message: "Product successfully created" });
 });
 
