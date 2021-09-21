@@ -56,7 +56,7 @@ let products = {
   4: {
     id: 4,
     name: `scoobey4`,
-    stock: 0,
+    stock: 1,
     price: 5,
     length: 1,
     width: 1,
@@ -64,6 +64,20 @@ let products = {
     reviews: [],
   },
 };
+
+/*
+  Products: {
+    id: x,
+    reviews: [
+      {
+      ...
+      }
+    ]
+  }
+  Productds:{}
+  Reviews:[]
+
+*/
 
 const express = require("express");
 const {
@@ -86,7 +100,10 @@ app.get("/", (req, res) => {
   res.send("Hello World");
 });
 
-app.get("/product/:id", (req, res) => {
+// PRODUCT ROUTES
+
+// perhaps make product -> products , and :id would indiciate the singular
+app.get("/products/:id", (req, res) => {
   const { id } = req.params;
   const { instock } = req.query;
 
@@ -178,8 +195,9 @@ app.post("/product", productValidationRules(), validate, (req, res) => {
   return res.status(201).json({ message: "Product successfully created" });
 });
 
+// REVIEW
+
 app.post("/review", reviewValidationRules(), validate, (req, res) => {
-  console.log("THIS IS THE BODY WE GOT IN REIVEW: ", req.body);
   const { rating, productId } = req.body;
   let review = {
     id: nextReviewId,
@@ -189,6 +207,10 @@ app.post("/review", reviewValidationRules(), validate, (req, res) => {
   nextReviewId++;
   return res.status(201).json({ message: "Review successfully created." });
 });
+
+// alternatively we could construct the url --> /products/:productid/reviews
+// this would be similar to how we've currently modelled it
+// could be misinterpeted that we want a review from a review ID
 
 app.get("/reviews/:productId", (req, res) => {
   const { productId } = req.params;
