@@ -195,24 +195,7 @@ app.post("/product", productValidationRules(), validate, (req, res) => {
   return res.status(201).json({ message: "Product successfully created" });
 });
 
-// REVIEW
-
-app.post("/review", reviewValidationRules(), validate, (req, res) => {
-  const { rating, productId } = req.body;
-  let review = {
-    id: nextReviewId,
-    rating: rating,
-  };
-  products[productId].reviews.push(review);
-  nextReviewId++;
-  return res.status(201).json({ message: "Review successfully created." });
-});
-
-// alternatively we could construct the url --> /products/:productid/reviews
-// this would be similar to how we've currently modelled it
-// could be misinterpeted that we want a review from a review ID
-
-app.get("/reviews/:productId", (req, res) => {
+app.get("/products/:productId/reviews", (req, res) => {
   const { productId } = req.params;
   const reviewsList = [];
 
@@ -228,6 +211,19 @@ app.get("/reviews/:productId", (req, res) => {
   res
     .status(404)
     .json({ message: `Reviews for product id ${productId} not found.` });
+});
+
+// REVIEW
+
+app.post("/review", reviewValidationRules(), validate, (req, res) => {
+  const { rating, productId } = req.body;
+  let review = {
+    id: nextReviewId,
+    rating: rating,
+  };
+  products[productId].reviews.push(review);
+  nextReviewId++;
+  return res.status(201).json({ message: "Review successfully created." });
 });
 
 app.listen(process.env.PORT || 5000, () =>
