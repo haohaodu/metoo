@@ -177,7 +177,7 @@ app.get("/products", (req, res) => {
   }
 });
 
-app.post("/product", productValidationRules(), validate, (req, res) => {
+app.post("/products", productValidationRules(), validate, (req, res) => {
   const { name, price, length, width, height, stock } = req.body;
   let product = {
     id: nextProductId,
