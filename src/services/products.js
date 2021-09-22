@@ -1,109 +1,10 @@
 /** @format */
 
-let nextProductId = 5;
-let nextReviewId = 5;
-let products = {
-  1: {
-    id: 1,
-    name: `doofus`,
-    stock: 1,
-    price: 15,
-    length: 4,
-    width: 2,
-    height: 1,
-    reviews: [
-      {
-        id: 1,
-        rating: 2,
-      },
-      {
-        id: 2,
-        rating: 5,
-      },
-    ],
-  },
-  2: {
-    id: 2,
-    name: `scoobey`,
-    stock: 0,
-    price: 5,
-    length: 1,
-    width: 1,
-    height: 1,
-    reviews: [
-      {
-        id: 3,
-        rating: 9,
-      },
-      {
-        id: 4,
-        rating: 10,
-      },
-    ],
-  },
-
-  3: {
-    id: 3,
-    name: `scoobey3`,
-    stock: 0,
-    price: 5,
-    length: 1,
-    width: 1,
-    height: 1,
-    reviews: [],
-  },
-
-  4: {
-    id: 4,
-    name: `scoobey4`,
-    stock: 1,
-    price: 5,
-    length: 1,
-    width: 1,
-    height: 1,
-    reviews: [],
-  },
-};
-
-/*
-  Products: {
-    id: x,
-    reviews: [
-      {
-      ...
-      }
-    ]
-  }
-  Productds:{}
-  Reviews:[]
-
-*/
-
-const express = require("express");
-const {
-  productValidationRules,
-  reviewValidationRules,
-  validate,
-} = require("./src/validate");
-const logger = require("morgan");
-const cors = require("cors");
-const app = express();
-
-app.use(cors());
-app.use(express.urlencoded({ extended: true }));
-app.use(express.json());
-app.use(logger("dev"));
-
+const { body, validationResult, param } = require("express-validator");
+let products = {};
 const inStock = (item) => item.stock >= 1;
 
-app.get("/", (req, res) => {
-  res.send("Hello World");
-});
-
-// PRODUCT ROUTES
-
-// perhaps make product -> products , and :id would indiciate the singular
-app.get("/products/:id", (req, res) => {
+const getOneProduct = async (req, res) => {
   const { id } = req.params;
   const { instock } = req.query;
 
@@ -124,9 +25,9 @@ app.get("/products/:id", (req, res) => {
     return res
       .status(404)
       .json({ message: `Product with id ${id} not found.` });
-});
+};
 
-app.get("/products", (req, res) => {
+const getProducts = async (req, res) => {
   let { name, instock } = req.query;
   let productList = [];
 
@@ -175,9 +76,9 @@ app.get("/products", (req, res) => {
       data: productList,
     });
   }
-});
+};
 
-app.post("/products", productValidationRules(), validate, (req, res) => {
+const createProduct = async (req, res) => {
   const { name, price, length, width, height, stock } = req.body;
   let product = {
     id: nextProductId,
@@ -193,9 +94,9 @@ app.post("/products", productValidationRules(), validate, (req, res) => {
   nextProductId++;
   console.log("product list: ", products);
   return res.status(201).json({ message: "Product successfully created" });
-});
+};
 
-app.get("/products/:id/reviews", (req, res) => {
+const getProductReviews = async (req, res) => {
   const { id } = req.params;
   const reviewsList = [];
 
@@ -209,21 +110,11 @@ app.get("/products/:id/reviews", (req, res) => {
   }
 
   res.status(404).json({ message: `Reviews for product id ${id} not found.` });
-});
+};
 
-// REVIEW
-
-app.post("/review", reviewValidationRules(), validate, (req, res) => {
-  const { rating, productId } = req.body;
-  let review = {
-    id: nextReviewId,
-    rating: rating,
-  };
-  products[productId].reviews.push(review);
-  nextReviewId++;
-  return res.status(201).json({ message: "Review successfully created." });
-});
-
-app.listen(process.env.PORT || 5000, () =>
-  console.log("Server listening at http://localhost:5000")
-);
+module.exports = {
+  getOneProduct: getOneProduct,
+  getProducts: getProducts,
+  createProduct: createProduct,
+  getProductReviews: getProductReviews,
+};
