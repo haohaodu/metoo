@@ -1,100 +1,87 @@
 /** @format */
 
-let nextProductId = 5;
-let nextReviewId = 5;
 const { products } = require("../constants/testProducts");
+const Product = require("../models/Product");
 const inStock = (item) => item.stock >= 1;
 
 const getProducts = async (req, res) => {
   let { name, instock } = req.query;
-  let productList = [];
+  instock = instock ? JSON.parse(instock) : null;
+  const productName = name || null;
+  console.log("in stock value: ", instock);
+  const stockQuery = instock ? 1 : 0;
+  console.log("stock query: ", stockQuery);
 
-  if (instock) instock = JSON.parse(instock);
-
-  // get all products
-  if (!name && !instock) {
-    Object.keys(products).map((key) => productList.push(products[key]));
-    return res.status(200).json({ data: productList });
+  if (!productName && !instock) {
+    const products = await Product.find();
+    return res.status(200).json({ data: products });
   }
 
-  // get all products in stock
-  if (!name && instock) {
-    Object.keys(products).map((key) => {
-      if (products[key].stock > 0) productList.push(products[key]);
-    });
-    if (productList.length === 0)
-      return res
-        .status(200)
-        .json({ message: "No products in stock", data: {} });
-    return res.status(200).json({ data: productList });
+  if (!productName) {
+    const products = Product.find({ instock: inStock });
+    return res.status(200).json({ data: products });
   }
 
-  // get all products with specific name (in stock or all)
-  if (name) {
-    //   loop through db and check if product with name exists
-    Object.keys(products).map((key) => {
-      const product = products[key];
-      if (product.name.includes(name)) {
-        // check if the found product is in stock
-        if (instock) {
-          if (product.stock > 0) productList.push(product);
-        } else productList.push(product);
-      }
+  const products = await Product.find({
+    name: { $regex: productName },
+    stock: { $gte: stockQuery },
+  });
+
+  console.log("no products in stock: ", products.length === 0 && instock);
+  if (products.length === 0 && instock) {
+    return res.status(200).json({
+      message: `No products found with name: ${productName} that are in stock`,
     });
-    // check if no matching names are found and type was in stock
-    if (productList.length === 0 && instock)
-      return res.status(404).json({
-        message: `Product with name ${name} not in stock or does not exist.`,
-      });
-    if (productList.length === 0)
-      return res
-        .status(404)
-        .json({ message: `Product with name ${name} not found.` });
-    res.status(200).json({
-      data: productList,
+  } else if (products.length === 0 && !instock) {
+    return res.status(200).json({
+      message: `No products found with name: ${productName}`,
     });
   }
+
+  return res.status(200).json({ data: products });
 };
 
 const getOneProduct = async (req, res) => {
   const { id } = req.params;
-  const { instock } = req.query;
+  const product = await Product.findById(id).catch((e) =>
+    console.log(`Error when retrieving product with id ${id}: ${e}`)
+  );
 
-  // specific product exists in db
-  if (products.hasOwnProperty(id)) {
-    // specific product is out of stock
-    if (instock && !inStock(products[id])) {
-      return res
-        .status(404)
-        .json({ message: `Product with id ${id} out of stock` });
-    }
-    // specific product is in stock, or instock option not provided
-    return res.status(200).json({ data: products[id] });
-  }
+  if (!product)
+    return res.status(404).json({ message: `Product with id ${id} not found` });
 
-  // specific product not found
-  else
+  if (product.stock <= 0)
     return res
       .status(404)
-      .json({ message: `Product with id ${id} not found.` });
+      .json({ message: `Product with id ${id} out of stock` });
+
+  return res.status(200).json({ data: product });
 };
 
 const createProduct = async (req, res) => {
   const { name, price, length, width, height, stock } = req.body;
-  let product = {
-    id: nextProductId,
+
+  const product = new Product({
     name: name,
     price: price,
     length: length,
     width: width,
     height: height,
     stock: stock,
-    reviews: [],
-  };
-  products[nextProductId] = product;
-  nextProductId++;
-  console.log("product list: ", products);
-  return res.status(201).json({ message: "Product successfully created" });
+  });
+
+  Product.create(product)
+    .then((data) => {
+      return res
+        .status(201)
+        .json({ message: "Product successfully created", data: data });
+    })
+    .catch((err) => {
+      return res.status(409).json({
+        message: "Error while creating product",
+        err: err,
+      });
+    });
 };
 
 const getProductReviews = async (req, res) => {
