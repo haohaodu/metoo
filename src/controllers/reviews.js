@@ -5,4 +5,6 @@ const reviewService = require("../services/reviews");
 
 const router = express.Router();
 
-router.get("/", reviewService);
+router.get("/", reviewService.createReview);
+
+module.exports = router;

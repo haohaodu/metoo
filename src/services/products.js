@@ -1,31 +1,9 @@
 /** @format */
 
-const { body, validationResult, param } = require("express-validator");
-let products = {};
+let nextProductId = 5;
+let nextReviewId = 5;
+const { products } = require("../constants/testProducts");
 const inStock = (item) => item.stock >= 1;
-
-const getOneProduct = async (req, res) => {
-  const { id } = req.params;
-  const { instock } = req.query;
-
-  // specific product exists in db
-  if (products.hasOwnProperty(id)) {
-    // specific product is out of stock
-    if (instock && !inStock(products[id])) {
-      return res
-        .status(404)
-        .json({ message: `Product with id ${id} out of stock` });
-    }
-    // specific product is in stock, or instock option not provided
-    return res.status(200).json({ data: products[id] });
-  }
-
-  // specific product not found
-  else
-    return res
-      .status(404)
-      .json({ message: `Product with id ${id} not found.` });
-};
 
 const getProducts = async (req, res) => {
   let { name, instock } = req.query;
@@ -78,6 +56,29 @@ const getProducts = async (req, res) => {
   }
 };
 
+const getOneProduct = async (req, res) => {
+  const { id } = req.params;
+  const { instock } = req.query;
+
+  // specific product exists in db
+  if (products.hasOwnProperty(id)) {
+    // specific product is out of stock
+    if (instock && !inStock(products[id])) {
+      return res
+        .status(404)
+        .json({ message: `Product with id ${id} out of stock` });
+    }
+    // specific product is in stock, or instock option not provided
+    return res.status(200).json({ data: products[id] });
+  }
+
+  // specific product not found
+  else
+    return res
+      .status(404)
+      .json({ message: `Product with id ${id} not found.` });
+};
+
 const createProduct = async (req, res) => {
   const { name, price, length, width, height, stock } = req.body;
   let product = {
@@ -110,6 +111,55 @@ const getProductReviews = async (req, res) => {
   }
 
   res.status(404).json({ message: `Reviews for product id ${id} not found.` });
+};
+
+const validate = (method) => {
+  switch (method) {
+    case "createProduct": {
+      return [
+        body("name")
+          .exists()
+          .withMessage("Required field")
+          .notEmpty()
+          .withMessage("Must not be empty"),
+        body("price")
+          .exists()
+          .withMessage("Required field")
+          .isNumeric()
+          .withMessage("Must be number")
+          .notEmpty()
+          .withMessage("Must not be empty"),
+        body("length")
+          .exists()
+          .withMessage("Required field")
+          .isNumeric()
+          .withMessage("Must be number")
+          .notEmpty()
+          .withMessage("Must not be empty"),
+        body("width")
+          .exists()
+          .withMessage("Required field")
+          .isNumeric()
+          .withMessage("Must be number")
+          .notEmpty()
+          .withMessage("Must not be empty"),
+        body("height")
+          .exists()
+          .withMessage("Required field")
+          .isNumeric()
+          .withMessage("Must be number")
+          .notEmpty()
+          .withMessage("Must not be empty"),
+        body("stock")
+          .exists()
+          .withMessage("Required field")
+          .isNumeric()
+          .withMessage("Must be number")
+          .notEmpty()
+          .withMessage("Must not be empty"),
+      ];
+    }
+  }
 };
 
 module.exports = {
