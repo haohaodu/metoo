@@ -2,23 +2,16 @@
 
 const { products } = require("../constants/testProducts");
 const Product = require("../models/Product");
-const inStock = (item) => item.stock >= 1;
 
 const getProducts = async (req, res) => {
   let { name, instock } = req.query;
   instock = instock ? JSON.parse(instock) : null;
   const productName = name || null;
-  console.log("in stock value: ", instock);
   const stockQuery = instock ? 1 : 0;
-  console.log("stock query: ", stockQuery);
+
 
   if (!productName && !instock) {
     const products = await Product.find();
-    return res.status(200).json({ data: products });
-  }
-
-  if (!productName) {
-    const products = Product.find({ instock: inStock });
     return res.status(200).json({ data: products });
   }
 
@@ -27,13 +20,12 @@ const getProducts = async (req, res) => {
     stock: { $gte: stockQuery },
   });
 
-  console.log("no products in stock: ", products.length === 0 && instock);
   if (products.length === 0 && instock) {
-    return res.status(200).json({
+    return res.status(404).json({
       message: `No products found with name: ${productName} that are in stock`,
     });
   } else if (products.length === 0 && !instock) {
-    return res.status(200).json({
+    return res.status(404).json({
       message: `No products found with name: ${productName}`,
     });
   }

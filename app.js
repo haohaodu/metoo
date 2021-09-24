@@ -12,7 +12,6 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(logger("dev"));
 app.use(router);
-
 app.get("/", (req, res) => {
   res.send("Hello World");
 });
@@ -20,6 +19,7 @@ app.get("/", (req, res) => {
 mg.then((data) => console.log("connected to db ")).catch((e) =>
   console.log("error: ", e)
 );
+
 
 app.listen(process.env.PORT || 5000, () =>
   console.log("Server listening at http://localhost:5000")
