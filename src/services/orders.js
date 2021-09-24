@@ -19,26 +19,23 @@ const getOneOrder = async (req, res) => {
 const createOrder = async (req, res) => {
   const { name, products } = req.body;
 
-  console.log("1");
   // check if we have stock first
-  products.forEach(async ({ id, quantity }) => {
-    const product = await Product.findById(id);
+  let flag = 0;
+  Promise.all(
+    products.map(async ({ id, quantity }) => {
+      const product = await Product.findById(id);
+      if (!product) flag++;
+      else if (product.stock < quantity) flag += 2;
+    })
+  );
 
-    if (!product)
-      return res
-        .status(404)
-        .json({ message: `Product with id ${id} does not exist` });
+  if (flag > 0)
+    return flag % 2 === 0
+      ? res.status(404).send({ message: `Not enough stock for product orders` })
+      : res
+          .status(404)
+          .json({ message: `Product with id ${id} does not exist` });
 
-    console.log("product stock < quantity", product.stock, quantity);
-    console.log(product.stock < quantity);
-    if (product.stock < quantity) {
-      return res
-        .status(404)
-        .send({ message: `Not enough stock for product orders` });
-    }
-  });
-
-  console.log("2");
   // update all product orders stock
   products.map(async ({ id, quantity }) => {
     const product = await Product.findById(id).catch((e) =>
@@ -51,13 +48,11 @@ const createOrder = async (req, res) => {
       .catch((e) => console.log("something went wrong while doing order: ", e));
   });
 
-  console.log("3");
   const order = await Order.create({
     name: name,
     products: products,
   }).catch((e) => console.log("error while creating order", e));
 
-  console.log("4");
   if (!order)
     return res
       .status(409)
