@@ -57,7 +57,6 @@ const createProduct = async (req, res) => {
 
   const errors = validationResult(req); // Finds the validation errors in this request and wraps them in an object with handy functions
 
-  console.log("errors? : ", errors);
   //if errors exist, return them
   if (!errors.isEmpty()) {
     return res.status(400).json({

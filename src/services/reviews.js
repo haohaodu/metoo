@@ -1,4 +1,5 @@
 /** @format */
+const Product = require("../models/Product");
 const Review = require("../models/Review");
 
 const createReview = async (req, res) => {
@@ -7,6 +8,12 @@ const createReview = async (req, res) => {
     rating: rating,
     product_id: id,
   });
+
+  const product = await Product.findById(id);
+  if (!product)
+    return res
+      .status(404)
+      .json({ message: `Product with id ${id} does not exist` });
 
   if (!review)
     return res
