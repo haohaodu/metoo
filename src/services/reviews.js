@@ -3,17 +3,17 @@ const Product = require("../models/Product");
 const Review = require("../models/Review");
 
 const createReview = async (req, res) => {
-  const { rating, id } = req.body;
+  const { rating, product_id } = req.body;
   const review = await Review.create({
     rating: rating,
-    product_id: id,
+    product_id: product_id,
   });
 
-  const product = await Product.findById(id);
+  const product = await Product.findById(product_id);
   if (!product)
     return res
       .status(404)
-      .json({ message: `Product with id ${id} does not exist` });
+      .json({ message: `Product with id ${product_id} does not exist` });
 
   if (!review)
     return res
