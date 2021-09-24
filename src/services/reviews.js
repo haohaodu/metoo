@@ -1,37 +1,44 @@
 /** @format */
 const Review = require("../models/Review");
-const Product = require("../models/Product");
-const axios = require("axios");
 
 const createReview = async (req, res) => {
-  const {id} = req.params;
-  const { rating } = req.body;
-  const product = await axios.get(`http://localhost:5000/products/${id}`).
-  then(({data}) =>  data)
-  .catch(e => console.log("error retrieving product with id: ", e, id))
-
-  const review = new Review({
+  const { rating, id } = req.body;
+  const review = await Review.create({
     rating: rating,
+    product_id: id,
   });
 
-  Product.updateOne(
-    {id: id},
-    {$addToSet: {reviews: [review]}}
-  ).then(data => console.log("success: ", data)).catch(e => console.log("err: ", e))
-  console.log("product: ", product)
+  if (!review)
+    return res
+      .status(409)
+      .json({ message: "Something went wrong creating review" });
 
-  return res.status(201).json({ message: "Review successfully created." });
+  return res
+    .status(201)
+    .json({ message: "Review successfully created", data: review });
+};
+
+const getProductReviews = async (req, res) => {
+  const { id } = req.params;
+  const reviews = await Review.find({ product_id: id });
+
+  if (reviews.length === 0)
+    return res
+      .status(404)
+      .json({ message: `Reviews for product with id ${id} not found.` });
+  return res.status(200).json({ data: reviews });
 };
 
 const validate = () => {
   /**
-   * 
+   *
    * Reviews{
    *    reviews: []
    * }
    */
-}
+};
 
-module.exports = { 
+module.exports = {
   createReview: createReview,
+  getProductReviews: getProductReviews,
 };

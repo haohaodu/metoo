@@ -9,7 +9,6 @@ const ProductSchema = mongoose.Schema({
   width: { type: String, required: true },
   height: { type: String, required: true },
   stock: { type: Number, required: true },
-  reviews: { type: Array, default: [] },
 });
 
 module.exports = mongoose.model("Products", ProductSchema);

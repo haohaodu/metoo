@@ -7,7 +7,10 @@ const router = express.Router();
 
 router.get("/", productService.getProducts);
 router.get("/:id", productService.getOneProduct);
-router.post("/", productService.createProduct);
-// router.get("/:id/reviews", productService.getProductReviews);
+router.post(
+  "/",
+  productService.validateCreateProduct(),
+  productService.createProduct
+);
 
 module.exports = router;
