@@ -41,9 +41,6 @@ const createOrder = async (req, res) => {
     });
   }
 
-  console.log("products: ", products);
-  console.log("1a");
-
   products.map(({ quantity }) => console.log("quantity: ", quantity));
   // // check if we have stock first
   let flag = 0;
@@ -59,8 +56,6 @@ const createOrder = async (req, res) => {
     })
   );
 
-  console.log("flag value: ", flag);
-  console.log("1b");
   if (flag > 0)
     return flag % 2 === 0
       ? res
@@ -70,7 +65,6 @@ const createOrder = async (req, res) => {
           .status(406)
           .json({ message: `Product id provided in order does not exist` });
 
-  console.log("2");
   // update all product orders stock
   products.map(async ({ _id, quantity }) => {
     // get specific product in order
@@ -85,13 +79,10 @@ const createOrder = async (req, res) => {
     );
   });
 
-  console.log("3");
   const order = await Order.create({
     name: name,
     products: products,
   }).catch((e) => console.log("error while creating order", e));
-
-  console.log("4");
 
   if (!order)
     return res
