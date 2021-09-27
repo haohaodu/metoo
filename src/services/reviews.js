@@ -5,7 +5,7 @@ const Review = require("../models/Review");
 const createReview = async (req, res) => {
   const { rating, product_id } = req.body;
   const review = await Review.create({
-    rating: rating,
+    rating: rating * 2,
     product_id: product_id,
   });
 
@@ -27,9 +27,12 @@ const createReview = async (req, res) => {
 
 const getProductReviews = async (req, res) => {
   const { id } = req.params;
+  console.log("id: ", id);
   const reviews = await Review.find({ product_id: id });
 
-  if (reviews.length === 0)
+  console.log("reviews: ", reviews);
+
+  if (!reviews)
     return res
       .status(404)
       .json({ message: `Reviews for product with id ${id} not found.` });
