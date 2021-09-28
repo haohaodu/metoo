@@ -59,10 +59,10 @@ const createOrder = async (req, res) => {
   if (flag > 0)
     return flag % 2 === 0
       ? res
-          .status(405)
+          .status(404)
           .json({ message: `Not enough stock for ordered product` })
       : res
-          .status(406)
+          .status(404)
           .json({ message: `Product id provided in order does not exist` });
 
   // update all product orders stock

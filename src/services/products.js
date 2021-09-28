@@ -6,7 +6,7 @@ const Product = require("../models/Product");
 const getProducts = async (req, res) => {
   let { name, instock } = req.query;
   instock = instock ? JSON.parse(instock) : null;
-  const productName = name || null;
+  const productName = name || "";
   const stockQuery = instock ? 1 : 0;
 
   // if no parameters, return all products
