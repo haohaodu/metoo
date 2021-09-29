@@ -4,16 +4,17 @@ const Review = require("../models/Review");
 
 const createReview = async (req, res) => {
   const { rating, product_id } = req.body;
-  const review = await Review.create({
-    rating: rating * 2,
-    product_id: product_id,
-  });
 
   const product = await Product.findById(product_id);
   if (!product)
     return res
       .status(404)
       .json({ message: `Product with id ${product_id} does not exist` });
+
+  const review = await Review.create({
+    rating: rating * 2,
+    product_id: product_id,
+  });
 
   if (!review)
     return res

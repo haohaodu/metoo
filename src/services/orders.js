@@ -35,7 +35,7 @@ const createOrder = async (req, res) => {
 
   //if errors exist, return them
   if (!errors.isEmpty()) {
-    return res.status(400).json({
+    return res.status(409).json({
       message: "Error while creating product",
       errors: errors.array(),
     });
@@ -59,10 +59,10 @@ const createOrder = async (req, res) => {
   if (flag > 0)
     return flag % 2 === 0
       ? res
-          .status(404)
+          .status(409)
           .json({ message: `Not enough stock for ordered product` })
       : res
-          .status(404)
+          .status(409)
           .json({ message: `Product id provided in order does not exist` });
 
   // update all product orders stock
